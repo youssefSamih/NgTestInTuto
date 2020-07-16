@@ -45,4 +45,35 @@ describe('HeroesComponent (deep tests)', () => {
       expect(heroComponentDEs[i].componentInstance.hero).toEqual(HEROES[i]);
     });
   });
+
+  it(`should call heroService.deleteHero when the hero's Component's
+      delete button is clicked`, () => {
+    spyOn(fixture.componentInstance, 'delete');
+    mockHeroService.getHeroes.and.returnValue(of(HEROES));
+
+    fixture.detectChanges();
+
+    const heroComponent = fixture.debugElement.queryAll(By.directive(HeroComponent));
+    // heroComponent[0].query(By.css('button'))
+    //                   .triggerEventHandler('click', {stopPropagation: () => {}});
+    // (<HeroComponent>heroComponent[0].componentInstance).delete.emit(undefined);
+    heroComponent[0].triggerEventHandler('delete', null);
+    expect(fixture.componentInstance.delete).toHaveBeenCalledWith(HEROES[0]);
+  });
+
+  it('should add a new hero to the list when the add button is clicked', () => {
+    mockHeroService.getHeroes.and.returnValue(of(HEROES));
+    fixture.detectChanges();
+    const name = 'Mr. Ice';
+    mockHeroService.addHero.and.returnValue(of({id: 5, name: name, strength: 4}));
+    const inputElement = fixture.debugElement.query(By.css('input')).nativeElement;
+    const addButton = fixture.debugElement.queryAll(By.css('button'))[0];
+
+    inputElement.value = name;
+    addButton.triggerEventHandler('click', null);
+    fixture.detectChanges();
+
+    const heroText = fixture.debugElement.query(By.css('ul')).nativeElement.textContent;
+    expect(heroText).toContain(name);
+  });
 });
